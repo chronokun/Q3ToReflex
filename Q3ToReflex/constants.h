@@ -1,3 +1,8 @@
+//
+//	Author:	Michael Cameron
+//	Email:	chronokun@hotmail.com, 
+//
+
 #pragma once
 
 #ifndef __CONSTANTS_H__

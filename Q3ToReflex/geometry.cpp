@@ -1,3 +1,8 @@
+//
+//	Author:	Michael Cameron
+//	Email:	chronokun@hotmail.com, 
+//
+
 // Libraries Include
 #include "libraries.h"
 // Local Includes

@@ -1,3 +1,8 @@
+//
+//	Author:	Michael Cameron
+//	Email:	chronokun@hotmail.com, 
+//
+
 #pragma once
 
 #ifndef __BRUSH_H__
