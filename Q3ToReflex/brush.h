@@ -1,6 +1,6 @@
 //
 //	Author:	Michael Cameron
-//	Email:	chronokun@hotmail.com, 
+//	Email:	chronokun@hotmail.com
 //
 
 #pragma once
