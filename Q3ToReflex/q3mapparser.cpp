@@ -86,6 +86,14 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 						eState = PARSERSTATE_TOPLEVEL;
 						bIsWorldSpawn = false;
 					}
+					else if(eState == PARSERSTATE_PATCH)
+					{
+						eState = PARSERSTATE_BRUSH;
+					}
+				}
+				else if(strcmp("patchDef2", Lines[i][0].c_str()) == 0)
+				{
+					eState = PARSERSTATE_PATCH;
 				}
 			}
 			else
