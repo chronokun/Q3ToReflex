@@ -54,6 +54,7 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 		}
 		InFile.close();
 
+		bool bIsWorldSpawn = false;
 		EParserState eState = PARSERSTATE_TOPLEVEL;
 		for(size_t i = 0; i < Lines.size(); ++i)
 		{
@@ -68,7 +69,10 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 					else if(eState == PARSERSTATE_ENTITY)
 					{
 						eState = PARSERSTATE_BRUSH;
-						this->m_Brushes.push_back(TPlaneBrush());
+						if(bIsWorldSpawn)
+						{
+							this->m_Brushes.push_back(TPlaneBrush());
+						}
 					}
 				}
 				else if(strcmp("}", Lines[i][0].c_str()) == 0)
@@ -80,6 +84,7 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 					else if(eState == PARSERSTATE_ENTITY)
 					{
 						eState = PARSERSTATE_TOPLEVEL;
+						bIsWorldSpawn = false;
 					}
 				}
 			}
@@ -87,12 +92,30 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 			{
 				if(eState == PARSERSTATE_ENTITY)
 				{
-					this->ParseEntity(Lines[i]);
+					if((Lines[i].size() == 2) && (strcmp("\"classname\"", Lines[i][0].c_str()) == 0))
+					{
+						if(strcmp("\"worldspawn\"", Lines[i][1].c_str()) == 0)
+						{
+							bIsWorldSpawn = true;
+						}
+						else
+						{
+							bIsWorldSpawn = false;
+						}
+					}
+					//this->ParseEntity(Lines[i]);
 				}
 				else if(eState == PARSERSTATE_BRUSH)
 				{
-					this->m_Brushes[this->m_Brushes.size()-1].m_Faces.push_back(TPlaneBrushFace());
-					this->ParseBrushFace(this->m_Brushes[this->m_Brushes.size()-1].m_Faces[this->m_Brushes[this->m_Brushes.size()-1].m_Faces.size()-1], Lines[i]);
+					if(bIsWorldSpawn)
+					{
+						TPlaneBrushFace BrushFace;
+						//this->m_Brushes[this->m_Brushes.size()-1].m_Faces.push_back(TPlaneBrushFace());
+						if(this->ParseBrushFace(BrushFace, Lines[i]))
+						{
+							this->m_Brushes[this->m_Brushes.size()-1].m_Faces.push_back(BrushFace);
+						}
+					}
 				}
 			}
 		}
@@ -111,27 +134,35 @@ void CQ3MapParser::ParseEntity(const std::vector<std::string>& _krTokens)
 	//
 }
 
-void CQ3MapParser::ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens)
+const bool CQ3MapParser::ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens)
 {
-	_rFace.m_Plane.m_A.m_dX = std::stod(_krTokens[1]);
-	_rFace.m_Plane.m_A.m_dY = std::stod(_krTokens[2]);
-	_rFace.m_Plane.m_A.m_dZ = std::stod(_krTokens[3]);
+	if((strcmp(_krTokens[0].c_str(), "(") == 0) && (strcmp(_krTokens[4].c_str(), ")") == 0))
+	{
+		_rFace.m_Plane.m_A.m_dX = std::stod(_krTokens[1]);
+		_rFace.m_Plane.m_A.m_dY = std::stod(_krTokens[2]);
+		_rFace.m_Plane.m_A.m_dZ = std::stod(_krTokens[3]);
 
-	_rFace.m_Plane.m_B.m_dX = std::stod(_krTokens[6]);
-	_rFace.m_Plane.m_B.m_dY = std::stod(_krTokens[7]);
-	_rFace.m_Plane.m_B.m_dZ = std::stod(_krTokens[8]);
+		_rFace.m_Plane.m_B.m_dX = std::stod(_krTokens[6]);
+		_rFace.m_Plane.m_B.m_dY = std::stod(_krTokens[7]);
+		_rFace.m_Plane.m_B.m_dZ = std::stod(_krTokens[8]);
 
-	_rFace.m_Plane.m_C.m_dX = std::stod(_krTokens[11]);
-	_rFace.m_Plane.m_C.m_dY = std::stod(_krTokens[12]);
-	_rFace.m_Plane.m_C.m_dZ = std::stod(_krTokens[13]);
+		_rFace.m_Plane.m_C.m_dX = std::stod(_krTokens[11]);
+		_rFace.m_Plane.m_C.m_dY = std::stod(_krTokens[12]);
+		_rFace.m_Plane.m_C.m_dZ = std::stod(_krTokens[13]);
 
-	_rFace.m_Material = _krTokens[15];
+		_rFace.m_Material = _krTokens[15];
 
-	_rFace.m_iTexCoordU = std::stoi(_krTokens[16]);
-	_rFace.m_iTexCoordV = std::stoi(_krTokens[17]);
+		_rFace.m_iTexCoordU = std::stoi(_krTokens[16]);
+		_rFace.m_iTexCoordV = std::stoi(_krTokens[17]);
 
-	_rFace.m_dTexRotation = std::stod(_krTokens[18]);
+		_rFace.m_dTexRotation = std::stod(_krTokens[18]);
 
-	_rFace.m_dTexScaleU = std::stod(_krTokens[19]);
-	_rFace.m_dTexScaleV = std::stod(_krTokens[20]);
+		_rFace.m_dTexScaleU = std::stod(_krTokens[19]);
+		_rFace.m_dTexScaleV = std::stod(_krTokens[20]);
+		return(true);
+	}
+	else
+	{
+		return(false);
+	}
 }

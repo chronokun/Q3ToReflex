@@ -32,7 +32,7 @@ public:
 	const bool LoadMap(const char* _kpcFileName);
 	void ParseEntity(const std::vector<std::string>& _krTokens);
 	void ParseBrush(const std::vector<std::vector<std::string>>& _krLines);
-	void ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens);
+	const bool ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens);
 
 	const bool ParseQ3Map(const char* _kpcFileName);
 };

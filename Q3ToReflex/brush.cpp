@@ -75,44 +75,47 @@ const std::vector<std::vector<TVectorD3>>& GetPolyFaces(	std::vector<std::vector
 {
 	_rResult.resize(_krBrush.m_Faces.size());
 
-	for(size_t i = 0; i < _krBrush.m_Faces.size()-2; ++i)
+	if(_krBrush.m_Faces.size() >= 4)
 	{
-		for(size_t j = i; j < _krBrush.m_Faces.size()-1; ++j)
+		for(size_t i = 0; i < _krBrush.m_Faces.size()-2; ++i)
 		{
-			for(size_t k = j; k < _krBrush.m_Faces.size(); ++k)
+			for(size_t j = i; j < _krBrush.m_Faces.size()-1; ++j)
 			{
-				if(		(i != j)
-					&&	(j != k)
-					&&	(k != i))
+				for(size_t k = j; k < _krBrush.m_Faces.size(); ++k)
 				{
-					const TPlaneD3TP kPA = _krBrush.m_Faces[i].m_Plane;
-
-					const TPlaneD3TP kPB = _krBrush.m_Faces[j].m_Plane;
-
-					const TPlaneD3TP kPC = _krBrush.m_Faces[k].m_Plane;
-
-					const TVectorD3 kNewVertex(math::GetIntersection(TVectorD3(), TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC)));
-
-					bool bLegal = math::IsIntersection(TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC));
-			
-					if(bLegal)
+					if(		(i != j)
+						&&	(j != k)
+						&&	(k != i))
 					{
-						for(size_t m = 0; m < _krBrush.m_Faces.size(); ++m)
+						const TPlaneD3TP kPA = _krBrush.m_Faces[i].m_Plane;
+
+						const TPlaneD3TP kPB = _krBrush.m_Faces[j].m_Plane;
+
+						const TPlaneD3TP kPC = _krBrush.m_Faces[k].m_Plane;
+
+						const TVectorD3 kNewVertex(math::GetIntersection(TVectorD3(), TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC)));
+
+						bool bLegal = math::IsIntersection(TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC));
+				
+						if(bLegal)
 						{
-							const TPlaneD3DN kPM(_krBrush.m_Faces[m].m_Plane);
-							const double kdExclusionDotProduct = math::DotProduct(kPM.m_Normal, kNewVertex);
-							if(kdExclusionDotProduct - kPM.m_dDistance > s_kdEpsilon)
+							for(size_t m = 0; m < _krBrush.m_Faces.size(); ++m)
 							{
-								bLegal = false;
+								const TPlaneD3DN kPM(_krBrush.m_Faces[m].m_Plane);
+								const double kdExclusionDotProduct = math::DotProduct(kPM.m_Normal, kNewVertex);
+								if(kdExclusionDotProduct - kPM.m_dDistance > s_kdEpsilon)
+								{
+									bLegal = false;
+								}
 							}
 						}
-					}
 
-					if(bLegal)
-					{
-						_rResult[i].push_back(kNewVertex);
-						_rResult[j].push_back(kNewVertex);
-						_rResult[k].push_back(kNewVertex);
+						if(bLegal)
+						{
+							_rResult[i].push_back(kNewVertex);
+							_rResult[j].push_back(kNewVertex);
+							_rResult[k].push_back(kNewVertex);
+						}
 					}
 				}
 			}

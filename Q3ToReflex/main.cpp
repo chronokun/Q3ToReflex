@@ -15,31 +15,34 @@
 
 const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBrush)
 {
-	std::stringstream ssOutput;
+	if(_krBrush.m_Faces.size() > 0)
+	{
+		std::stringstream ssOutput;
 
-	ssOutput << std::fixed;
-	ssOutput << "brush" << std::endl;
-	ssOutput << "\tvertices" << std::endl;
-	for(size_t i = 0; i < _krBrush.m_Vertices.size(); ++i)
-	{
-		ssOutput << "\t\t" << _krBrush.m_Vertices[i].m_dX << " " << _krBrush.m_Vertices[i].m_dZ << " " << -_krBrush.m_Vertices[i].m_dY << " " << std::endl;
-	}
-	ssOutput << "\tfaces" << std::endl;
-	for(size_t i = 0; i < _krBrush.m_Faces.size(); ++i)
-	{
-		ssOutput << "\t\t" << _krBrush.m_Faces[i].m_dTexCoordU << " "
-			<< _krBrush.m_Faces[i].m_dTexCoordV << " "
-			<< _krBrush.m_Faces[i].m_dTexScaleU << " "
-			<< _krBrush.m_Faces[i].m_dTexScaleV << " "
-			<< _krBrush.m_Faces[i].m_dTexRotation;
-		for(size_t j = 0; j < _krBrush.m_Faces[i].m_Indices.size(); ++j)
+		ssOutput << std::fixed;
+		ssOutput << "brush" << std::endl;
+		ssOutput << "\tvertices" << std::endl;
+		for(size_t i = 0; i < _krBrush.m_Vertices.size(); ++i)
 		{
-			ssOutput << " " << _krBrush.m_Faces[i].m_Indices[j];
+			ssOutput << "\t\t" << _krBrush.m_Vertices[i].m_dX << " " << _krBrush.m_Vertices[i].m_dZ << " " << -_krBrush.m_Vertices[i].m_dY << " " << std::endl;
 		}
-		ssOutput << " " << _krBrush.m_Faces[i].m_Material << std::endl;
-	}
+		ssOutput << "\tfaces" << std::endl;
+		for(size_t i = 0; i < _krBrush.m_Faces.size(); ++i)
+		{
+			ssOutput << "\t\t" << _krBrush.m_Faces[i].m_dTexCoordU << " "
+				<< _krBrush.m_Faces[i].m_dTexCoordV << " "
+				<< _krBrush.m_Faces[i].m_dTexScaleU << " "
+				<< _krBrush.m_Faces[i].m_dTexScaleV << " "
+				<< _krBrush.m_Faces[i].m_dTexRotation;
+			for(size_t j = 0; j < _krBrush.m_Faces[i].m_Indices.size(); ++j)
+			{
+				ssOutput << " " << _krBrush.m_Faces[i].m_Indices[j];
+			}
+			ssOutput << " " << _krBrush.m_Faces[i].m_Material << std::endl;
+		}
 
-	_rOutput = ssOutput.str();
+		_rOutput = ssOutput.str();
+	}
 	return(_rOutput);
 }
 
