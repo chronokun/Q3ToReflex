@@ -13,10 +13,11 @@ struct TPlaneBrush;
 struct TPlaneBrushFace;
 
 // Enums
-enum EEntityType
+enum EParserState
 {
-	ENTITYTYPE_UNKNOWN,
-	ENTITYTYPE_WORLDSPAWN
+	PARSERSTATE_TOPLEVEL,
+	PARSERSTATE_ENTITY,
+	PARSERSTATE_BRUSH
 };
 
 class CQ3MapParser
@@ -29,10 +30,11 @@ public:
 public:
 	CQ3MapParser();
 	const bool LoadMap(const char* _kpcFileName);
-	const size_t ParseEntity(const std::vector<std::string>& _krTokens, const size_t _kszIndex);
-	const size_t ParseBrush(const std::vector<std::string>& _krTokens, const size_t _kszIndex);
-	const size_t ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens, const size_t _kszIndex);
+	void ParseEntity(const std::vector<std::string>& _krTokens);
+	void ParseBrush(const std::vector<std::vector<std::string>>& _krLines);
+	void ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens);
 
+	const bool ParseQ3Map(const char* _kpcFileName);
 };
 
 #endif

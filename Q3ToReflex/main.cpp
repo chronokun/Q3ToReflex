@@ -51,7 +51,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 	}
 
 	CQ3MapParser Parser;
-	const bool kbSuccess = Parser.LoadMap(_kppcArgv[1]);
+	const bool kbSuccess = Parser.ParseQ3Map(_kppcArgv[1]);
 
 	if(!kbSuccess)
 	{
