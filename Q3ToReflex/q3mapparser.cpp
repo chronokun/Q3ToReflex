@@ -158,7 +158,7 @@ const bool CQ3MapParser::ParseBrushFace(TPlaneBrushFace& _rFace, const std::vect
 		_rFace.m_Plane.m_C.m_dY = std::stod(_krTokens[12]);
 		_rFace.m_Plane.m_C.m_dZ = std::stod(_krTokens[13]);
 
-		_rFace.m_Material = _krTokens[15];
+		_rFace.m_Material = this->SubstituteMaterial(std::string(), _krTokens[15]);
 
 		_rFace.m_iTexCoordU = std::stoi(_krTokens[16]);
 		_rFace.m_iTexCoordV = std::stoi(_krTokens[17]);
@@ -173,4 +173,16 @@ const bool CQ3MapParser::ParseBrushFace(TPlaneBrushFace& _rFace, const std::vect
 	{
 		return(false);
 	}
+}
+
+const std::string& CQ3MapParser::SubstituteMaterial(std::string& _rResult, const std::string& _krInput)
+{
+	_rResult = _krInput;
+
+	if(strcmp(_krInput.c_str(), "common/clip") == 0)
+	{
+		_rResult = "internal/editor/textures/editor_clip";
+	}
+
+	return(_krInput);
 }

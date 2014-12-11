@@ -61,4 +61,6 @@ const TVectorD3& GetFaceNormal(TVectorD3& _rResult, const size_t _kszFace, const
 
 const TVectorD3& GetFaceNormal(TVectorD3& _rResult, const size_t _kszFace, const TPlaneBrush& _krBrush);
 
+const bool CheckForBrushCull(const std::string& _krInput);
+
 #endif

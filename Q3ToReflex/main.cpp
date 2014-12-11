@@ -15,7 +15,16 @@
 
 const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBrush)
 {
-	if(_krBrush.m_Faces.size() > 0)
+	bool bCullBrush = false;
+	for(const TPolyBrushFace& krFace : _krBrush.m_Faces)
+	{
+		if(CheckForBrushCull(krFace.m_Material))
+		{
+			bCullBrush = true;
+		}
+	}
+
+	if(_krBrush.m_Faces.size() > 0 && !bCullBrush)
 	{
 		std::stringstream ssOutput;
 

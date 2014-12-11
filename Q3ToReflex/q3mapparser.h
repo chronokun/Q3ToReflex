@@ -36,6 +36,8 @@ public:
 	const bool ParseBrushFace(TPlaneBrushFace& _rFace, const std::vector<std::string>& _krTokens);
 
 	const bool ParseQ3Map(const char* _kpcFileName);
+
+	const std::string& SubstituteMaterial(std::string& _rResult, const std::string& _krInput);
 };
 
 #endif

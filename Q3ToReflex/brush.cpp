@@ -216,3 +216,37 @@ const TVectorD3& GetFaceNormal(TVectorD3& _rResult, const size_t _kszFace, const
 	_rResult = kPlane.m_Normal;
 	return(_rResult);
 }
+
+const bool CheckForBrushCull(const std::string& _krInput)
+{
+	if(strcmp(_krInput.c_str(), "common/hint") == 0)
+	{
+		return(true);
+	}
+	else if(strcmp(_krInput.c_str(), "common/hintskip") == 0)
+	{
+		return(true);
+	}
+	else if(strcmp(_krInput.c_str(), "common/weapclip") == 0)
+	{
+		return(true);
+	}
+	else if(strcmp(_krInput.c_str(), "common/metalclip") == 0)
+	{
+		return(true);
+	}
+	else if(strcmp(_krInput.c_str(), "common/botclip") == 0)
+	{
+		return(true);
+	}
+	else if(strcmp(_krInput.c_str(), "common/botclip") == 0)
+	{
+		return(true);
+	}
+	else if(strcmp(_krInput.c_str(), "common/clusterportal") == 0)
+	{
+		return(true);
+	}
+
+	return(false);
+}
