@@ -86,95 +86,10 @@ int main(const int _kiArgC, const char** _kppcArgv)
 
 		std::vector<TPolyBrush> PolyBrushes(Parser.m_Brushes.size());
 
-		// For all brushes...
+		// For all quake style plane brushes get reflex style polygon brush equivalent
 		for(size_t i = 0; i < Parser.m_Brushes.size(); ++i)
 		{
-			// Get unsorted polygons
-			const std::vector<std::vector<TVectorD3>> kPolysUnsorted = GetPolyFaces(std::vector<std::vector<TVectorD3>>(), Parser.m_Brushes[i]);
-
-			// Sort polygons
-			std::vector<std::vector<TVectorD3>> SortedPolys;
-			// Sort each face...
-			for(size_t j = 0; j < Parser.m_Brushes[i].m_Faces.size(); ++j)
-			{
-				// Check face has atleast three vertices
-				if(kPolysUnsorted[j].size() >= 3)
-				{
-					const TVectorD3 kFaceNormal = GetFaceNormal(TVectorD3(), j, Parser.m_Brushes[i]);
-					// Get sorted vertices for face
-					const std::vector<TVectorD3> kSortedFaceVerts = SortFaceVerts(std::vector<TVectorD3>(), kPolysUnsorted[j], kFaceNormal, false);
-					// Add to our sorted polygons
-					SortedPolys.push_back(kSortedFaceVerts);
-				}
-				else
-				{
-					// If face is invalid, push empty vector
-					SortedPolys.push_back(std::vector<TVectorD3>());
-				}
-			}
-
-			// Add all brush vertices to a single vector of unmerged vertices
-			std::vector<TVectorD3> UnmergedFaceVerts;
-			for(size_t n = 0; n < SortedPolys.size(); ++n)
-			{
-				for(size_t m = 0; m < SortedPolys[n].size(); ++m)
-				{
-					UnmergedFaceVerts.push_back(SortedPolys[n][m]);
-				}
-			}
-
-			// Merge vertices so they are not duplicated across faces
-			std::vector<TVectorD3> MergedFaceVerts;
-			for(size_t n = 0; n < UnmergedFaceVerts.size(); ++n)
-			{
-				bool bUnique = true;
-				for(size_t m = 0; m < MergedFaceVerts.size(); ++m)
-				{
-					// If a vertex already exists in our merged list, flag as non-unique
-					if(math::Equal(UnmergedFaceVerts[n], MergedFaceVerts[m], s_kdEpsilon))
-					{
-						bUnique = false;
-					}
-				}
-				// If a vertex doesn't yet exist in our list of merged vertices, add it.
-				if(bUnique)
-				{
-					MergedFaceVerts.push_back(UnmergedFaceVerts[n]);
-				}
-			}
-
-			// Assign our merged vertices to our corresponding polygonal brush
-			PolyBrushes[i].m_Vertices = MergedFaceVerts;
-			// Set number of faces for brush
-			PolyBrushes[i].m_Faces.resize(Parser.m_Brushes[i].m_Faces.size());
-			// For each brush face...
-			for(size_t j = 0; j < PolyBrushes[i].m_Faces.size(); ++j)
-			{
-				// Copy properties from out plane-defined brush
-				PolyBrushes[i].m_Faces[j].m_Material = Parser.m_Brushes[i].m_Faces[j].m_Material;
-
-				PolyBrushes[i].m_Faces[j].m_dTexCoordU = (double)Parser.m_Brushes[i].m_Faces[j].m_iTexCoordU;
-				PolyBrushes[i].m_Faces[j].m_dTexCoordV = (double)Parser.m_Brushes[i].m_Faces[j].m_iTexCoordV;
-
-				PolyBrushes[i].m_Faces[j].m_dTexScaleU = (double)Parser.m_Brushes[i].m_Faces[j].m_dTexScaleU;
-				PolyBrushes[i].m_Faces[j].m_dTexScaleV = (double)Parser.m_Brushes[i].m_Faces[j].m_dTexScaleV;
-
-				PolyBrushes[i].m_Faces[j].m_dTexRotation = (double)Parser.m_Brushes[i].m_Faces[j].m_dTexRotation;
-
-				// Find new indices that correspond to our brushes merged vertices
-				PolyBrushes[i].m_Faces[j].m_Indices.resize(SortedPolys[j].size());
-				for(size_t n = 0; n < PolyBrushes[i].m_Faces[j].m_Indices.size(); ++n)
-				{
-					for(size_t m = 0; m < PolyBrushes[i].m_Vertices.size(); ++m)
-					{
-						// If brush vertex matches polygon vertex, assign it's index to our faces indices
-						if(math::Equal(SortedPolys[j][n], PolyBrushes[i].m_Vertices[m], s_kdEpsilon))
-						{
-							PolyBrushes[i].m_Faces[j].m_Indices[n] = m;
-						}
-					}
-				}
-			}
+			PolyBrushes[i] = ToPolyBrush(TPolyBrush(), Parser.m_Brushes[i]);
 		}
 
 		// Add map header and WorldSpawn entity
