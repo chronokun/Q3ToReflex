@@ -124,7 +124,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 							//Controls[j] = Parser.m_PatchDefs[i].m_ControlPoints[j/3][j%3];
 						}
 
-						const std::vector<TPolyBrush> kBrushes = BuildPatchBrushes(std::vector<TPolyBrush>(), Controls, 5, "structural/dev/dev_black", 0.0, 0.0, 1.0, 1.0, 0.0);
+						const std::vector<TPolyBrush> kBrushes = BuildPatchBrushes(std::vector<TPolyBrush>(), Controls, 5, Parser.m_PatchDefs[i].m_Material, 0.0, 0.0, 1.0, 1.0, 0.0);
 						for(size_t k = 0; k < kBrushes.size(); ++k)
 						{
 							PatchBrushes.push_back(kBrushes[k]);

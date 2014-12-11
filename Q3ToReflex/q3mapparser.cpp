@@ -96,9 +96,12 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 				}
 				else if(strcmp("patchDef2", Lines[i][0].c_str()) == 0)
 				{
-					const char* kpcDebug = Lines[i+1][0].c_str();
 					PatchDefBlocks.push_back(std::vector<std::vector<std::string>>());
 					eState = PARSERSTATE_PATCH;
+				}
+				else if(eState == PARSERSTATE_PATCH)
+				{
+					PatchDefBlocks[PatchDefBlocks.size()-1].push_back(Lines[i]);
 				}
 			}
 			else
@@ -198,11 +201,12 @@ const TPatchDef& CQ3MapParser::CreatePatchDef(TPatchDef& _rResult, const std::ve
 {
 	if(_krLines.size() > 0)
 	{
-		if((strcmp(_krLines[0][0].c_str(), "(") == 0) && (strcmp(_krLines[0][6].c_str(), ")") == 0))
+		if((strcmp(_krLines[1][0].c_str(), "(") == 0) && (strcmp(_krLines[1][6].c_str(), ")") == 0))
 		{
-			_rResult.m_szColumns = std::stoi(_krLines[0][1]);
-			_rResult.m_szRows = std::stoi(_krLines[0][2]);
-			for(size_t i = 1; i < _krLines.size(); ++i)
+			_rResult.m_Material = _krLines[0][0];
+			_rResult.m_szColumns = std::stoi(_krLines[1][1]);
+			_rResult.m_szRows = std::stoi(_krLines[1][2]);
+			for(size_t i = 3; i < _krLines.size()-1; ++i)
 			{
 				_rResult.m_ControlPoints.push_back(std::vector<TVectorD3>());
 				for(size_t j = 0; j < _rResult.m_szRows; ++j)
@@ -210,7 +214,7 @@ const TPatchDef& CQ3MapParser::CreatePatchDef(TPatchDef& _rResult, const std::ve
 					const double kdX = std::stod(_krLines[i][(7*j)+2]);
 					const double kdY = std::stod(_krLines[i][(7*j)+3]);
 					const double kdZ = std::stod(_krLines[i][(7*j)+4]);
-					_rResult.m_ControlPoints[i-1].push_back(TVectorD3(kdX, kdY, kdZ));
+					_rResult.m_ControlPoints[i-3].push_back(TVectorD3(kdX, kdY, kdZ));
 				}
 			}
 		}
