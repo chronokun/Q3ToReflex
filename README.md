@@ -7,7 +7,7 @@ Usage run from commandline: Q3ToReflex.exe <input>.map <output>.map
 
 Notes:
 
-	- Currently does not convert entities and patches.
+	- Currently does not convert entities.
 
 	- Most material names are copied unchanged from input map.
 

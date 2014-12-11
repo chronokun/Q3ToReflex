@@ -21,11 +21,20 @@ enum EParserState
 	PARSERSTATE_PATCH
 };
 
+struct TPatchDef
+{
+	size_t m_szRows;
+	size_t m_szColumns;
+	std::vector<std::vector<TVectorD3>> m_ControlPoints;
+	std::string m_Material;
+};
+
 class CQ3MapParser
 {
 	// Variables
 public:
 	std::vector<TPlaneBrush> m_Brushes;
+	std::vector<TPatchDef> m_PatchDefs;
 
 	// Functions
 public:
@@ -38,6 +47,8 @@ public:
 	const bool ParseQ3Map(const char* _kpcFileName);
 
 	const std::string& SubstituteMaterial(std::string& _rResult, const std::string& _krInput);
+
+	const TPatchDef& CreatePatchDef(TPatchDef& _rResult, const std::vector<std::vector<std::string>>& _krLines);
 };
 
 #endif

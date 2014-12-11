@@ -354,3 +354,156 @@ const TPolyBrush& ToPolyBrush(TPolyBrush& _rResult, const TPlaneBrush& _krInput)
 
 	return(_rResult);
 }
+
+const TPolyBrush& ExtrudeFaceToBrush(	TPolyBrush& _rResult, const std::vector<TVectorD3>& _krVertices, const std::string& _krMaterial,
+										const double _kdTexCoordU, const double _kdTexCoordV,
+										const double _kdTexScaleU, const double _kdTexScaleV,
+										const double _kdTexRotation)
+{
+	// Get face plane
+	const TPlaneD3DN kFacePlaneA = TPlaneD3TP(_krVertices[0], _krVertices[1], _krVertices[2]);
+	const TPlaneD3DN kFacePlaneB = TPlaneD3TP(_krVertices[2], _krVertices[3], _krVertices[0]);
+
+	const TVectorD3 kNormal = math::Normalize(TVectorD3(), math::Add(TVectorD3(), kFacePlaneA.m_Normal, kFacePlaneB.m_Normal));
+
+	// Find center point
+	TVectorD3 Center(0.0, 0.0, 0.0);
+	for(size_t i = 0; i < _krVertices.size(); ++i)
+	{
+		Center = math::Add(Center, Center, _krVertices[i]);
+	}
+	Center = math::ScalarMultiply(Center, Center, (1.0 / (double)_krVertices.size()));
+
+	// Find back point
+	const TVectorD3 kBackPoint = math::Add(TVectorD3(), Center, math::ScalarMultiply(TVectorD3(), kNormal, 1.0f));
+
+	// Add vertices to brush
+	_rResult.m_Vertices.resize(_krVertices.size()+1);
+	for(size_t i = 0; i < _rResult.m_Vertices.size()-1; ++i)
+	{
+		_rResult.m_Vertices[i] = _krVertices[i];
+	}
+	_rResult.m_Vertices[_rResult.m_Vertices.size()-1] = kBackPoint;
+
+	// Add indices
+	_rResult.m_Faces.resize(_krVertices.size()+1);
+	for(size_t i = 0; i < _rResult.m_Vertices.size()-1; ++i)
+	{
+		_rResult.m_Faces[0].m_Indices.push_back(i);
+	}
+	std::reverse(_rResult.m_Faces[0].m_Indices.begin(), _rResult.m_Faces[0].m_Indices.end());
+	for(size_t i = 1; i < _rResult.m_Faces.size(); ++i)
+	{
+		_rResult.m_Faces[i].m_Indices.push_back(i-1);
+		_rResult.m_Faces[i].m_Indices.push_back(_rResult.m_Vertices.size()-1);
+		_rResult.m_Faces[i].m_Indices.push_back(i % (_rResult.m_Faces.size()-1));
+		std::reverse(_rResult.m_Faces[i].m_Indices.begin(), _rResult.m_Faces[i].m_Indices.end());
+	}
+
+	// Set face properties
+	for(size_t i = 1; i < _rResult.m_Faces.size(); ++i)
+	{
+		_rResult.m_Faces[i].m_dTexCoordU = 0.0;
+		_rResult.m_Faces[i].m_dTexCoordV = 0.0;
+		_rResult.m_Faces[i].m_dTexScaleU = 0.0;
+		_rResult.m_Faces[i].m_dTexScaleV = 0.0;
+		_rResult.m_Faces[i].m_dTexRotation = 0.0;
+		_rResult.m_Faces[i].m_Material = "internal/editor/textures/editor_nolight";
+	}
+	_rResult.m_Faces[0].m_dTexCoordU = _kdTexCoordU;
+	_rResult.m_Faces[0].m_dTexCoordV = _kdTexCoordV;
+	_rResult.m_Faces[0].m_dTexScaleU = _kdTexScaleU;
+	_rResult.m_Faces[0].m_dTexScaleV = _kdTexScaleV;
+	_rResult.m_Faces[0].m_dTexRotation = _kdTexRotation;
+	_rResult.m_Faces[0].m_Material = _krMaterial;
+
+	return(_rResult);
+}
+
+const std::vector<TPolyBrush>& BuildPatchBrushes(	std::vector<TPolyBrush>& _rResult, const TVectorD3 _Controls[9], const int _kiLevel,
+													const std::string& _krMaterial,
+													const double _kdTexCoordU, const double _kdTexCoordV,
+													const double _kdTexScaleU, const double _kdTexScaleV,
+													const double _kdTexRotation)
+{
+	const int kiL = _kiLevel;
+	const int kiL1 = _kiLevel + 1;
+
+	std::vector<TVectorD3> Verts;
+
+	Verts.resize(kiL1 * kiL1);
+
+	// Make Verts
+	for(int i = 0; i <= kiL; ++i)
+	{
+		float a = (float)i / (float)kiL;
+		float b = 1.0f - a;
+
+		TVectorD3 P0, P1, P2, P3, PF;
+
+		math::ScalarMultiply(P0, _Controls[0], (b * b));
+		math::ScalarMultiply(P1, _Controls[3], (2 * b * a));
+		math::ScalarMultiply(P2, _Controls[6], (a * a));
+
+		math::Add(P3, P0, P1);
+		math::Add(PF, P3, P2);
+
+		Verts[i] = PF;
+	}
+	for(int i = 1; i <= kiL; ++i)
+	{
+		float a = (float)i / (float)kiL;
+		float b = 1.0f - a;
+		
+		TVectorD3 temp[3];
+		
+		for(int j = 0; j < 3; ++j)
+		{
+			int k = 3 * j;
+
+			TVectorD3 P0, P1, P2, P3, PF;
+
+			math::ScalarMultiply(P0, _Controls[k+0], (b * b));
+			math::ScalarMultiply(P1, _Controls[k+1], (2 * b * a));
+			math::ScalarMultiply(P2, _Controls[k+2], (a * a));
+
+			math::Add(P3, P0, P1);
+			math::Add(PF, P3, P2);
+
+			temp[j] = PF;
+		}
+		
+		for(int j = 0; j <= kiL; ++j)
+		{
+			float a = (float)j / (float)kiL;
+			float b = 1.0f - a;
+
+			TVectorD3 P0, P1, P2, P3, PF;
+
+			math::ScalarMultiply(P0, temp[0], (b * b));
+			math::ScalarMultiply(P1, temp[1], (2 * b * a));
+			math::ScalarMultiply(P2, temp[2], (a * a));
+
+			math::Add(P3, P0, P1);
+			math::Add(PF, P3, P2);
+		
+			Verts[i * kiL1 + j] = PF;
+		}
+	}
+
+	// Make Faces
+	for(int x = 0; x < kiL1-1; ++x)
+	{
+		for(int y = 0; y < kiL1-1; ++y)
+		{
+			const int ki3 = x + (y*kiL1);
+			const int ki2 = x + 1 + (y*kiL1);
+			const int ki1 = x + ((y + 1) * kiL1);
+			const int ki0 = (x + 1) + ((y + 1)*kiL1);
+			const std::vector<TVectorD3> kFaceVerts = { Verts[ki0], Verts[ki1], Verts[ki3], Verts[ki2] };
+			_rResult.push_back(ExtrudeFaceToBrush(TPolyBrush(), kFaceVerts, _krMaterial, _kdTexCoordU, _kdTexCoordV, _kdTexScaleU, _kdTexScaleV, _kdTexRotation));
+		}
+	}
+
+	return(_rResult);
+}

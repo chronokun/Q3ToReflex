@@ -20,6 +20,7 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 	std::ifstream InFile;
 
 	std::vector<std::vector<std::string>> Lines;
+	std::vector<std::vector<std::vector<std::string>>> PatchDefBlocks;
 
 	InFile.open(_kpcFileName, std::ios::in);
 	if(InFile.is_open())
@@ -61,7 +62,6 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 
 
 		// Begin parsing ...
-		bool bIsWorldSpawn = false;
 		EParserState eState = PARSERSTATE_TOPLEVEL;
 		for(size_t i = 0; i < Lines.size(); ++i)
 		{
@@ -76,11 +76,7 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 					else if(eState == PARSERSTATE_ENTITY)
 					{
 						eState = PARSERSTATE_BRUSH;
-						// Add worldspawn brushes to our vector of brushes if we find them
-						if(bIsWorldSpawn)
-						{
-							this->m_Brushes.push_back(TPlaneBrush());
-						}
+						this->m_Brushes.push_back(TPlaneBrush());
 					}
 				}
 				else if(strcmp("}", Lines[i][0].c_str()) == 0)
@@ -92,7 +88,6 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 					else if(eState == PARSERSTATE_ENTITY)
 					{
 						eState = PARSERSTATE_TOPLEVEL;
-						bIsWorldSpawn = false;
 					}
 					else if(eState == PARSERSTATE_PATCH)
 					{
@@ -101,6 +96,8 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 				}
 				else if(strcmp("patchDef2", Lines[i][0].c_str()) == 0)
 				{
+					const char* kpcDebug = Lines[i+1][0].c_str();
+					PatchDefBlocks.push_back(std::vector<std::vector<std::string>>());
 					eState = PARSERSTATE_PATCH;
 				}
 			}
@@ -108,35 +105,28 @@ const bool CQ3MapParser::ParseQ3Map(const char* _kpcFileName)
 			{
 				if(eState == PARSERSTATE_ENTITY)
 				{
-					if((Lines[i].size() == 2) && (strcmp("\"classname\"", Lines[i][0].c_str()) == 0))
-					{
-						// Identify if entity is worldspawn
-						if(strcmp("\"worldspawn\"", Lines[i][1].c_str()) == 0)
-						{
-							bIsWorldSpawn = true;
-						}
-						else
-						{
-							bIsWorldSpawn = false;
-						}
-					}
+					//
 				}
 				else if(eState == PARSERSTATE_BRUSH)
 				{
-					// Only parse brushes within worldspawn
-					if(bIsWorldSpawn)
+					TPlaneBrushFace BrushFace;
+					// If parsing brushface succeeds, add it to our brushes set of faces
+					if(this->ParseBrushFace(BrushFace, Lines[i]))
 					{
-						TPlaneBrushFace BrushFace;
-						// If parsing brushface succeeds, add it to our brushes set of faces
-						if(this->ParseBrushFace(BrushFace, Lines[i]))
-						{
-							this->m_Brushes[this->m_Brushes.size()-1].m_Faces.push_back(BrushFace);
-						}
+						this->m_Brushes[this->m_Brushes.size()-1].m_Faces.push_back(BrushFace);
 					}
+				}
+				else if(eState == PARSERSTATE_PATCH)
+				{
+					PatchDefBlocks[PatchDefBlocks.size()-1].push_back(Lines[i]);
 				}
 			}
 		}
-		//
+		// Generate PatchDefs
+		for(const std::vector<std::vector<std::string>>& krLines : PatchDefBlocks)
+		{
+			this->m_PatchDefs.push_back(CreatePatchDef(TPatchDef(), krLines));
+		}
 	}
 	else
 	{
@@ -201,5 +191,35 @@ const std::string& CQ3MapParser::SubstituteMaterial(std::string& _rResult, const
 		_rResult = "internal/editor/textures/editor_clip";
 	}
 
-	return(_krInput);
+	return(_rResult);
+}
+
+const TPatchDef& CQ3MapParser::CreatePatchDef(TPatchDef& _rResult, const std::vector<std::vector<std::string>>& _krLines)
+{
+	if(_krLines.size() > 0)
+	{
+		if((strcmp(_krLines[0][0].c_str(), "(") == 0) && (strcmp(_krLines[0][6].c_str(), ")") == 0))
+		{
+			_rResult.m_szColumns = std::stoi(_krLines[0][1]);
+			_rResult.m_szRows = std::stoi(_krLines[0][2]);
+			for(size_t i = 1; i < _krLines.size(); ++i)
+			{
+				_rResult.m_ControlPoints.push_back(std::vector<TVectorD3>());
+				for(size_t j = 0; j < _rResult.m_szRows; ++j)
+				{
+					const double kdX = std::stod(_krLines[i][(7*j)+2]);
+					const double kdY = std::stod(_krLines[i][(7*j)+3]);
+					const double kdZ = std::stod(_krLines[i][(7*j)+4]);
+					_rResult.m_ControlPoints[i-1].push_back(TVectorD3(kdX, kdY, kdZ));
+				}
+			}
+		}
+		else
+		{
+			_rResult.m_szColumns = 0;
+			_rResult.m_szRows = 0;
+		}
+	}
+
+	return(_rResult);
 }

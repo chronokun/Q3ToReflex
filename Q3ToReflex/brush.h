@@ -65,4 +65,15 @@ const bool CheckForBrushCull(const std::string& _krInput);
 
 const TPolyBrush& ToPolyBrush(TPolyBrush& _rResult, const TPlaneBrush& _krInput);
 
+const TPolyBrush& ExtrudeFaceToBrush(	TPolyBrush& _rResult, const std::vector<TVectorD3>& _krVertices, const std::string& _krMaterial,
+										const double _kdTexCoordU, const double _kdTexCoordV,
+										const double _kdTexScaleU, const double _kdTexScaleV,
+										const double _kdTexRotation);
+
+const std::vector<TPolyBrush>& BuildPatchBrushes(	std::vector<TPolyBrush>& _rResult, const TVectorD3 _Controls[9], const int _kiLevel,
+													const std::string& _krMaterial,
+													const double _kdTexCoordU, const double _kdTexCoordV,
+													const double _kdTexScaleU, const double _kdTexScaleV,
+													const double _kdTexRotation);
+
 #endif
