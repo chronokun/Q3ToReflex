@@ -219,33 +219,19 @@ const TVectorD3& GetFaceNormal(TVectorD3& _rResult, const size_t _kszFace, const
 
 const bool CheckForBrushCull(const std::string& _krInput)
 {
-	if(strcmp(_krInput.c_str(), "common/hint") == 0)
+	const std::array<std::string, 6> kCullStrings = { 
+		"common/hint",
+		"common/hintskip",
+		"common/weapclip",
+		"common/metalclip",
+		"common/botclip",
+		"common/clusterportal" };
+	for(const std::string& krCullString : kCullStrings)
 	{
-		return(true);
-	}
-	else if(strcmp(_krInput.c_str(), "common/hintskip") == 0)
-	{
-		return(true);
-	}
-	else if(strcmp(_krInput.c_str(), "common/weapclip") == 0)
-	{
-		return(true);
-	}
-	else if(strcmp(_krInput.c_str(), "common/metalclip") == 0)
-	{
-		return(true);
-	}
-	else if(strcmp(_krInput.c_str(), "common/botclip") == 0)
-	{
-		return(true);
-	}
-	else if(strcmp(_krInput.c_str(), "common/botclip") == 0)
-	{
-		return(true);
-	}
-	else if(strcmp(_krInput.c_str(), "common/clusterportal") == 0)
-	{
-		return(true);
+		if(strcmp(_krInput.c_str(), krCullString.c_str()) == 0)
+		{
+			return(true);
+		}
 	}
 
 	return(false);

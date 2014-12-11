@@ -10,6 +10,7 @@
 
 // C++ Libraries
 #include <cstdint>
+#include <array>
 #include <vector>
 #include <cstdlib>
 #include <fstream>
