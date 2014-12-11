@@ -14,53 +14,65 @@
 const std::vector<std::vector<TVectorD3>>& GetPolyFaces(	std::vector<std::vector<TVectorD3>>& _rResult,
 															const TPolyBrush& _krBrush)
 {
+	// Make as many polygons as faces
 	_rResult.resize(_krBrush.m_Faces.size());
 
-	for(size_t i = 0; i < _krBrush.m_Faces.size()-2; ++i)
+	// Check our brush has atleast four sides as all 3d volumes should
+	if(_krBrush.m_Faces.size() >= 4)
 	{
-		for(size_t j = i; j < _krBrush.m_Faces.size()-1; ++j)
+		// For all plane combinations
+		for(size_t i = 0; i < _krBrush.m_Faces.size()-2; ++i)
 		{
-			for(size_t k = j; k < _krBrush.m_Faces.size(); ++k)
+			for(size_t j = i; j < _krBrush.m_Faces.size()-1; ++j)
 			{
-				if(		(i != j)
-					&&	(j != k)
-					&&	(k != i))
+				for(size_t k = j; k < _krBrush.m_Faces.size(); ++k)
 				{
-					const TPlaneD3TP kPA(	_krBrush.m_Vertices[_krBrush.m_Faces[i].m_Indices[2]],
-											_krBrush.m_Vertices[_krBrush.m_Faces[i].m_Indices[1]],
-											_krBrush.m_Vertices[_krBrush.m_Faces[i].m_Indices[0]]);
-
-					const TPlaneD3TP kPB(	_krBrush.m_Vertices[_krBrush.m_Faces[j].m_Indices[2]],
-											_krBrush.m_Vertices[_krBrush.m_Faces[j].m_Indices[1]],
-											_krBrush.m_Vertices[_krBrush.m_Faces[j].m_Indices[0]]);
-
-					const TPlaneD3TP kPC(	_krBrush.m_Vertices[_krBrush.m_Faces[k].m_Indices[2]],
-											_krBrush.m_Vertices[_krBrush.m_Faces[k].m_Indices[1]],
-											_krBrush.m_Vertices[_krBrush.m_Faces[k].m_Indices[0]]);
-
-					const TVectorD3 kNewVertex(math::GetIntersection(TVectorD3(), TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC)));
-
-					bool bLegal = math::IsIntersection(TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC));
-			
-					if(bLegal)
+					// Check we aren't trying to intersect a plane against itself
+					if(		(i != j)
+						&&	(j != k)
+						&&	(k != i))
 					{
-						for(size_t m = 0; m < _krBrush.m_Faces.size(); ++m)
+						// Get brush planes
+						const TPlaneD3TP kPA(	_krBrush.m_Vertices[_krBrush.m_Faces[i].m_Indices[2]],
+												_krBrush.m_Vertices[_krBrush.m_Faces[i].m_Indices[1]],
+												_krBrush.m_Vertices[_krBrush.m_Faces[i].m_Indices[0]]);
+
+						const TPlaneD3TP kPB(	_krBrush.m_Vertices[_krBrush.m_Faces[j].m_Indices[2]],
+												_krBrush.m_Vertices[_krBrush.m_Faces[j].m_Indices[1]],
+												_krBrush.m_Vertices[_krBrush.m_Faces[j].m_Indices[0]]);
+
+						const TPlaneD3TP kPC(	_krBrush.m_Vertices[_krBrush.m_Faces[k].m_Indices[2]],
+												_krBrush.m_Vertices[_krBrush.m_Faces[k].m_Indices[1]],
+												_krBrush.m_Vertices[_krBrush.m_Faces[k].m_Indices[0]]);
+
+						// Find intersection point if one exists
+						const TVectorD3 kNewVertex(math::GetIntersection(TVectorD3(), TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC)));
+
+						// Check if planes actually intersect and gave valid intersection point
+						bool bLegal = math::IsIntersection(TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC));
+				
+						if(bLegal)
 						{
-							const TPlaneD3DN kPM(	TPlaneD3TP(	_krBrush.m_Vertices[_krBrush.m_Faces[m].m_Indices[2]],
-																_krBrush.m_Vertices[_krBrush.m_Faces[m].m_Indices[1]],
-																_krBrush.m_Vertices[_krBrush.m_Faces[m].m_Indices[0]]));
-							if(math::DotProduct(kPM.m_Normal, kNewVertex) - kPM.m_dDistance > s_kdEpsilon)
+							for(size_t m = 0; m < _krBrush.m_Faces.size(); ++m)
 							{
-								bLegal = false;
+								const TPlaneD3DN kPM(	TPlaneD3TP(	_krBrush.m_Vertices[_krBrush.m_Faces[m].m_Indices[2]],
+																	_krBrush.m_Vertices[_krBrush.m_Faces[m].m_Indices[1]],
+																	_krBrush.m_Vertices[_krBrush.m_Faces[m].m_Indices[0]]));
+								// Check vertex against exclusion plane to find if it lies outside brush and needs to be discarded
+								if(math::DotProduct(kPM.m_Normal, kNewVertex) - kPM.m_dDistance > s_kdEpsilon)
+								{
+									bLegal = false;
+								}
 							}
 						}
-					}
 
-					if(bLegal)
-					{
-						_rResult[i].push_back(kNewVertex);
-						_rResult[j].push_back(kNewVertex);
-						_rResult[k].push_back(kNewVertex);
+						// Add point to all three faces if valid
+						if(bLegal)
+						{
+							_rResult[i].push_back(kNewVertex);
+							_rResult[j].push_back(kNewVertex);
+							_rResult[k].push_back(kNewVertex);
+						}
 					}
 				}
 			}
@@ -73,34 +85,42 @@ const std::vector<std::vector<TVectorD3>>& GetPolyFaces(	std::vector<std::vector
 const std::vector<std::vector<TVectorD3>>& GetPolyFaces(	std::vector<std::vector<TVectorD3>>& _rResult,
 															const TPlaneBrush& _krBrush)
 {
+	// Make as many polygons as faces
 	_rResult.resize(_krBrush.m_Faces.size());
 
+	// Check our brush has atleast four sides as all 3d volumes should
 	if(_krBrush.m_Faces.size() >= 4)
 	{
+		// For all plane combinations
 		for(size_t i = 0; i < _krBrush.m_Faces.size()-2; ++i)
 		{
 			for(size_t j = i; j < _krBrush.m_Faces.size()-1; ++j)
 			{
 				for(size_t k = j; k < _krBrush.m_Faces.size(); ++k)
 				{
+					// Check we aren't trying to intersect a plane against itself
 					if(		(i != j)
 						&&	(j != k)
 						&&	(k != i))
 					{
+						// Get brush planes
 						const TPlaneD3TP kPA = _krBrush.m_Faces[i].m_Plane;
 
 						const TPlaneD3TP kPB = _krBrush.m_Faces[j].m_Plane;
 
 						const TPlaneD3TP kPC = _krBrush.m_Faces[k].m_Plane;
 
+						// Find intersection point if one exists
 						const TVectorD3 kNewVertex(math::GetIntersection(TVectorD3(), TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC)));
 
+						// Check if planes actually intersect and gave valid intersection point
 						bool bLegal = math::IsIntersection(TPlaneD3DN(kPA), TPlaneD3DN(kPB), TPlaneD3DN(kPC));
 				
 						if(bLegal)
 						{
 							for(size_t m = 0; m < _krBrush.m_Faces.size(); ++m)
 							{
+								// Check vertex against exclusion plane to find if it lies outside brush and needs to be discarded
 								const TPlaneD3DN kPM(_krBrush.m_Faces[m].m_Plane);
 								const double kdExclusionDotProduct = math::DotProduct(kPM.m_Normal, kNewVertex);
 								if(kdExclusionDotProduct - kPM.m_dDistance > s_kdEpsilon)
@@ -110,6 +130,7 @@ const std::vector<std::vector<TVectorD3>>& GetPolyFaces(	std::vector<std::vector
 							}
 						}
 
+						// Add point to all three faces if valid
 						if(bLegal)
 						{
 							_rResult[i].push_back(kNewVertex);
@@ -171,6 +192,7 @@ const std::vector<TVectorD3>& SortFaceVerts(	std::vector<TVectorD3>& _rResult,
 			}
 		}
 
+		// Swap vertex order if necessary
 		if(szNext < _rResult.size())
 		{
 			std::swap(_rResult[i+1], _rResult[szNext]);
@@ -181,6 +203,8 @@ const std::vector<TVectorD3>& SortFaceVerts(	std::vector<TVectorD3>& _rResult,
 												math::CrossProduct(	TVectorD3(),
 																	math::Subtract(TVectorD3(), _rResult[1], _rResult[2]),
 																	math::Subtract(TVectorD3(), _rResult[1], _rResult[0])));
+
+	// Reverse face winding if normal is facing the wrong direction.
 	if(math::DotProduct(kNormal, _krFaceNormal) > 0.0)
 	{
 		if(!_kbClockwise)
@@ -226,6 +250,8 @@ const bool CheckForBrushCull(const std::string& _krInput)
 		"common/metalclip",
 		"common/botclip",
 		"common/clusterportal" };
+
+	// Check input string against array of materials to cull
 	for(const std::string& krCullString : kCullStrings)
 	{
 		if(strcmp(_krInput.c_str(), krCullString.c_str()) == 0)

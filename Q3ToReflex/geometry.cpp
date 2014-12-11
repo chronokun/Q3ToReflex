@@ -8,6 +8,7 @@
 // Local Includes
 #include "mathtypes.h"
 #include "vector.h"
+#include "constants.h"
 // This Include
 #include "geometry.h"
 
@@ -26,7 +27,7 @@ const bool math::IsIntersection(const TPlaneD3DN& _krA,
 								const TPlaneD3DN& _krC)
 {
 	const TVectorD3 kNAxNB = math::CrossProduct(TVectorD3(), _krA.m_Normal, _krB.m_Normal);
-	return(abs(math::DotProduct(kNAxNB, _krC.m_Normal)) > 0.0);
+	return(abs(math::DotProduct(kNAxNB, _krC.m_Normal)) > s_kdEpsilon);
 }
 
 const TVectorD3& math::GetIntersection(	TVectorD3& _rResult,
