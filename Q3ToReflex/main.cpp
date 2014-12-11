@@ -24,7 +24,7 @@ const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBr
 		ssOutput << "\tvertices" << std::endl;
 		for(size_t i = 0; i < _krBrush.m_Vertices.size(); ++i)
 		{
-			ssOutput << "\t\t" << _krBrush.m_Vertices[i].m_dX << " " << _krBrush.m_Vertices[i].m_dZ << " " << -_krBrush.m_Vertices[i].m_dY << " " << std::endl;
+			ssOutput << "\t\t" << _krBrush.m_Vertices[i].m_dX << " " << _krBrush.m_Vertices[i].m_dZ << " " << _krBrush.m_Vertices[i].m_dY << " " << std::endl;
 		}
 		ssOutput << "\tfaces" << std::endl;
 		for(size_t i = 0; i < _krBrush.m_Faces.size(); ++i)
@@ -81,7 +81,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 				if(kPolysUnsorted[j].size() >= 3)
 				{
 					const TVectorD3 kFaceNormal = GetFaceNormal(TVectorD3(), j, Parser.m_Brushes[i]);
-					const std::vector<TVectorD3> kSortedFaceVerts = SortFaceVerts(std::vector<TVectorD3>(), kPolysUnsorted[j], kFaceNormal, true);
+					const std::vector<TVectorD3> kSortedFaceVerts = SortFaceVerts(std::vector<TVectorD3>(), kPolysUnsorted[j], kFaceNormal, false);
 					SortedPolys.push_back(kSortedFaceVerts);
 				}
 				else
