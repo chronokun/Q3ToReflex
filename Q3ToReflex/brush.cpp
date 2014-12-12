@@ -243,13 +243,14 @@ const TVectorD3& GetFaceNormal(TVectorD3& _rResult, const size_t _kszFace, const
 
 const bool CheckForBrushCull(const std::string& _krInput)
 {
-	const std::array<std::string, 6> kCullStrings = { 
+	const std::array<std::string, 7> kCullStrings = { 
 		"common/hint",
 		"common/hintskip",
 		"common/weapclip",
 		"common/metalclip",
 		"common/botclip",
-		"common/clusterportal" };
+		"common/clusterportal",
+		"common/trigger" };
 
 	// Check input string against array of materials to cull
 	for(const std::string& krCullString : kCullStrings)
@@ -360,11 +361,7 @@ const TPolyBrush& ExtrudeFaceToBrush(	TPolyBrush& _rResult, const std::vector<TV
 										const double _kdTexScaleU, const double _kdTexScaleV,
 										const double _kdTexRotation)
 {
-	// Get face plane
-	const TPlaneD3DN kFacePlaneA = TPlaneD3TP(_krVertices[0], _krVertices[1], _krVertices[2]);
-	const TPlaneD3DN kFacePlaneB = TPlaneD3TP(_krVertices[2], _krVertices[3], _krVertices[0]);
-
-	const TVectorD3 kNormal = math::Normalize(TVectorD3(), math::Add(TVectorD3(), kFacePlaneA.m_Normal, kFacePlaneB.m_Normal));
+	const TVectorD3 kNormal = math::GetPolygonNormal(TVectorD3(), _krVertices);
 
 	// Find center point
 	TVectorD3 Center(0.0, 0.0, 0.0);
@@ -375,7 +372,7 @@ const TPolyBrush& ExtrudeFaceToBrush(	TPolyBrush& _rResult, const std::vector<TV
 	Center = math::ScalarMultiply(Center, Center, (1.0 / (double)_krVertices.size()));
 
 	// Find back point
-	const TVectorD3 kBackPoint = math::Add(TVectorD3(), Center, math::ScalarMultiply(TVectorD3(), kNormal, 1.0f));
+	const TVectorD3 kBackPoint = math::Add(TVectorD3(), Center, math::ScalarMultiply(TVectorD3(), kNormal, -4.0f));
 
 	// Add vertices to brush
 	_rResult.m_Vertices.resize(_krVertices.size()+1);

@@ -59,3 +59,27 @@ const TPlaneD3TP& math::ReversePlane(TPlaneD3TP& _rResult, const TPlaneD3TP& _kr
 	_rResult.m_C = _krInput.m_A;
 	return(_rResult);
 }
+
+const TVectorD3& math::GetPolygonNormal(TVectorD3& _rResult, const std::vector<TVectorD3> _krPolygon)
+{
+	_rResult = TVectorD3(0.0, 0.0, 0.0);
+
+	for(size_t i = 0; i < _krPolygon.size(); ++i)
+	{
+		const size_t kszP = ((_krPolygon.size()-1)+i)%_krPolygon.size();
+		const size_t kszC = i;
+
+		const TVectorD3& krP = _krPolygon[kszP];
+		const TVectorD3& krC = _krPolygon[kszC];
+
+		const TVectorD3 kR = TVectorD3(	((krP.m_dZ + krC.m_dZ) * (krP.m_dY - krC.m_dY)),
+										((krP.m_dX + krC.m_dX) * (krP.m_dZ - krC.m_dZ)),
+										((krP.m_dY + krC.m_dY) * (krP.m_dX - krC.m_dX)));
+
+		_rResult = math::Add(TVectorD3(), _rResult, kR);
+	}
+
+	_rResult = math::Normalize(TVectorD3(), _rResult);
+
+	return(_rResult);
+}

@@ -55,6 +55,8 @@ namespace math
 										const TPlaneD3DN& _krC);
 
 	const TPlaneD3TP& ReversePlane(TPlaneD3TP& _rResult, const TPlaneD3TP& _krInput);
+
+	const TVectorD3& GetPolygonNormal(TVectorD3& _rResult, const std::vector<TVectorD3> _krPolygon);
 };
 
 #endif
