@@ -43,8 +43,8 @@ const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBr
 		{
 			ssOutput << "\t\t" << _krBrush.m_Faces[i].m_dTexCoordU << " "
 				<< _krBrush.m_Faces[i].m_dTexCoordV << " "
-				<< _krBrush.m_Faces[i].m_dTexScaleU << " "
-				<< _krBrush.m_Faces[i].m_dTexScaleV << " "
+				<< _krBrush.m_Faces[i].m_dTexScaleU * 2.0 << " "
+				<< _krBrush.m_Faces[i].m_dTexScaleV * 2.0 << " "
 				<< _krBrush.m_Faces[i].m_dTexRotation;
 			for(size_t j = 0; j < _krBrush.m_Faces[i].m_Indices.size(); ++j)
 			{
