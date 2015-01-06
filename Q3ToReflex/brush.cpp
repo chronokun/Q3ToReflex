@@ -249,8 +249,7 @@ const bool CheckForBrushCull(const std::string& _krInput)
 		"common/weapclip",
 		"common/metalclip",
 		"common/botclip",
-		"common/clusterportal",
-		"common/trigger" };
+		"common/clusterportal" };
 
 	// Check input string against array of materials to cull
 	for(const std::string& krCullString : kCullStrings)

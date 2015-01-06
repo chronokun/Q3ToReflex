@@ -13,13 +13,21 @@
 #include "brush.h"
 #include "q3mapparser.h"
 
-const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBrush)
+const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBrush, const bool _kbNoClip, const bool _kbNoTrigger)
 {
 	// Cull any brushes we don't wish to import, eg. visibility hints etc.
 	bool bCullBrush = false;
 	for(const TPolyBrushFace& krFace : _krBrush.m_Faces)
 	{
 		if(CheckForBrushCull(krFace.m_Material))
+		{
+			bCullBrush = true;
+		}
+		if(_kbNoTrigger && strcmp(krFace.m_Material.c_str(), "common/trigger") == 0)
+		{
+			bCullBrush = true;
+		}
+		if(_kbNoClip && strcmp(krFace.m_Material.c_str(), "internal/editor/textures/editor_clip") == 0)
 		{
 			bCullBrush = true;
 		}
@@ -60,8 +68,13 @@ const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBr
 
 int main(const int _kiArgC, const char** _kppcArgv)
 {
+	bool bNoPatch = false;
+	bool bNoClip = false;
+	bool bNoTrigger = false;
+	int iTessFactor = 3;
+
 	// Check we have correct number of parameters
-	if(_kiArgC != 3)
+	if(_kiArgC < 3)
 	{
 		return(3);
 	}
@@ -82,6 +95,34 @@ int main(const int _kiArgC, const char** _kppcArgv)
 		if(!OutFile.is_open())
 		{
 			return(2);
+		}
+
+		// Check commandline switches
+		for(int i = 3; i < _kiArgC; ++i)
+		{
+			if(strcmp("-nopatches", _kppcArgv[i]) == 0)
+			{
+				bNoPatch = true;
+			}
+			else if(strcmp("-noclip", _kppcArgv[i]) == 0)
+			{
+				bNoClip = true;
+			}
+			else if(strcmp("-notrigger", _kppcArgv[i]) == 0)
+			{
+				bNoTrigger = true;
+			}
+			else if(strcmp("-tessfactor", _kppcArgv[i]) == 0)
+			{
+				if(i+1 < _kiArgC && isdigit((int)_kppcArgv[i+1][0]))
+				{
+					int iTemp = atoi(_kppcArgv[i+1]);
+					if(iTemp >= 1 && iTemp <= 7)
+					{
+						iTessFactor = iTemp;
+					}
+				}
+			}
 		}
 
 		std::vector<TPolyBrush> PolyBrushes(Parser.m_Brushes.size());
@@ -124,7 +165,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 							//Controls[j] = Parser.m_PatchDefs[i].m_ControlPoints[j/3][j%3];
 						}
 
-						const std::vector<TPolyBrush> kBrushes = BuildPatchBrushes(std::vector<TPolyBrush>(), Controls, 5, Parser.m_PatchDefs[i].m_Material, 0.0, 0.0, 1.0, 1.0, 0.0);
+						const std::vector<TPolyBrush> kBrushes = BuildPatchBrushes(std::vector<TPolyBrush>(), Controls, iTessFactor, Parser.m_PatchDefs[i].m_Material, 0.0, 0.0, 1.0, 1.0, 0.0);
 						for(size_t k = 0; k < kBrushes.size(); ++k)
 						{
 							PatchBrushes.push_back(kBrushes[k]);
@@ -144,14 +185,17 @@ int main(const int _kiArgC, const char** _kppcArgv)
 		// Add brushes
 		for(size_t i = 0; i < PolyBrushes.size(); ++i)
 		{
-			const std::string BrushString = GetBrushString(std::string(), PolyBrushes[i]);
+			const std::string BrushString = GetBrushString(std::string(), PolyBrushes[i], bNoClip, bNoTrigger);
 			OutFile << BrushString;
 		}
 		// Add patches
-		for(size_t i = 0; i < PatchBrushes.size(); ++i)
+		if(!bNoPatch)
 		{
-			const std::string PatchString = GetBrushString(std::string(), PatchBrushes[i]);
-			OutFile << PatchString;
+			for(size_t i = 0; i < PatchBrushes.size(); ++i)
+			{
+				const std::string PatchString = GetBrushString(std::string(), PatchBrushes[i], bNoClip, bNoTrigger);
+				OutFile << PatchString;
+			}
 		}
 		// Close output file
 		OutFile.close();
