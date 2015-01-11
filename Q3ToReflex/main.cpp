@@ -49,16 +49,19 @@ const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBr
 		ssOutput << "\tfaces" << std::endl;
 		for(size_t i = 0; i < _krBrush.m_Faces.size(); ++i)
 		{
-			ssOutput << "\t\t" << _krBrush.m_Faces[i].m_dTexCoordU << " "
-				<< _krBrush.m_Faces[i].m_dTexCoordV << " "
-				<< _krBrush.m_Faces[i].m_dTexScaleU * 2.0 << " "
-				<< _krBrush.m_Faces[i].m_dTexScaleV * 2.0 << " "
-				<< _krBrush.m_Faces[i].m_dTexRotation;
-			for(size_t j = 0; j < _krBrush.m_Faces[i].m_Indices.size(); ++j)
+			if(_krBrush.m_Faces[i].m_Indices.size() > 2)
 			{
-				ssOutput << " " << _krBrush.m_Faces[i].m_Indices[j];
+				ssOutput << "\t\t" << _krBrush.m_Faces[i].m_dTexCoordU << " "
+					<< _krBrush.m_Faces[i].m_dTexCoordV << " "
+					<< _krBrush.m_Faces[i].m_dTexScaleU * 2.0 << " "
+					<< _krBrush.m_Faces[i].m_dTexScaleV * 2.0 << " "
+					<< _krBrush.m_Faces[i].m_dTexRotation;
+				for(size_t j = 0; j < _krBrush.m_Faces[i].m_Indices.size(); ++j)
+				{
+					ssOutput << " " << _krBrush.m_Faces[i].m_Indices[j];
+				}
+				ssOutput << " " << _krBrush.m_Faces[i].m_Material << std::endl;
 			}
-			ssOutput << " " << _krBrush.m_Faces[i].m_Material << std::endl;
 		}
 
 		_rOutput = ssOutput.str();
