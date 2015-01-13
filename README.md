@@ -10,6 +10,7 @@ Available switches are:
 -notrigger
 -noclip
 -tessfactor <1-7>
+-allcaulk
 
 Notes:
 

@@ -13,7 +13,7 @@
 #include "brush.h"
 #include "q3mapparser.h"
 
-const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBrush, const bool _kbNoClip, const bool _kbNoTrigger)
+const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBrush, const bool _kbNoClip, const bool _kbNoTrigger, const bool _kbAllCaulk)
 {
 	// Cull any brushes we don't wish to import, eg. visibility hints etc.
 	bool bCullBrush = false;
@@ -60,7 +60,16 @@ const std::string& GetBrushString(std::string& _rOutput, const TPolyBrush& _krBr
 				{
 					ssOutput << " " << _krBrush.m_Faces[i].m_Indices[j];
 				}
-				ssOutput << " " << _krBrush.m_Faces[i].m_Material << std::endl;
+				if(		(!_kbAllCaulk)
+					||	(strcmp(_krBrush.m_Faces[i].m_Material.c_str(), "common/trigger") == 0)
+					||	(strcmp(_krBrush.m_Faces[i].m_Material.c_str(), "internal/editor/textures/editor_clip") == 0))
+				{
+					ssOutput << " " << _krBrush.m_Faces[i].m_Material << std::endl;
+				}
+				else
+				{
+					ssOutput << " " << "internal/editor/textures/editor_nolight" << std::endl;
+				}
 			}
 		}
 
@@ -74,6 +83,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 	bool bNoPatch = false;
 	bool bNoClip = false;
 	bool bNoTrigger = false;
+	bool bAllCaulk = false;
 	int iTessFactor = 3;
 
 	// Check we have correct number of parameters
@@ -114,6 +124,10 @@ int main(const int _kiArgC, const char** _kppcArgv)
 			else if(strcmp("-notrigger", _kppcArgv[i]) == 0)
 			{
 				bNoTrigger = true;
+			}
+			else if(strcmp("-allcaulk", _kppcArgv[i]) == 0)
+			{
+				bAllCaulk = true;
 			}
 			else if(strcmp("-tessfactor", _kppcArgv[i]) == 0)
 			{
@@ -188,7 +202,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 		// Add brushes
 		for(size_t i = 0; i < PolyBrushes.size(); ++i)
 		{
-			const std::string BrushString = GetBrushString(std::string(), PolyBrushes[i], bNoClip, bNoTrigger);
+			const std::string BrushString = GetBrushString(std::string(), PolyBrushes[i], bNoClip, bNoTrigger, bAllCaulk);
 			OutFile << BrushString;
 		}
 		// Add patches
@@ -196,7 +210,7 @@ int main(const int _kiArgC, const char** _kppcArgv)
 		{
 			for(size_t i = 0; i < PatchBrushes.size(); ++i)
 			{
-				const std::string PatchString = GetBrushString(std::string(), PatchBrushes[i], bNoClip, bNoTrigger);
+				const std::string PatchString = GetBrushString(std::string(), PatchBrushes[i], bNoClip, bNoTrigger, bAllCaulk);
 				OutFile << PatchString;
 			}
 		}
